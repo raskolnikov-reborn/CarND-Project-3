@@ -1,3 +1,4 @@
+
 # # Behavior Cloning Project
 # The objectives of this project are to capture training data using a simulator and clone the users steering angle behavior in the provided simulator
 
@@ -217,55 +218,6 @@ X_train, X_valid, y_train, y_valid = train_test_split(np.array(features),
 validation_generator = validation_generator_function(X_valid, y_valid)
 
 
-# In[12]:
-
-# Test image brightness scaling
-for i in range(5):
-    rand_ind =  np.random.randint(0,len(X_train))
-    rand_img = cv2.imread(X_train[rand_ind])
-    rand_img = cv2.cvtColor(rand_img,cv2.COLOR_BGR2RGB)
-    plt.imshow(rand_img)
-    plt.show()
-    plt.imshow(brightness_random(rand_img),cmap='gray')
-    plt.show()
-
-
-# In[13]:
-
-# Test random translation
-for i in range(5):
-    rand_ind =  np.random.randint(0,len(X_train))
-    rand_img = cv2.imread(X_train[rand_ind])
-    rand_img = cv2.cvtColor(rand_img,cv2.COLOR_BGR2RGB)
-    plt.imshow(rand_img,cmap='gray')
-    plt.show()
-    out_img,steer = translate_random(rand_img,y_train[rand_ind])
-    plt.imshow(out_img,cmap = 'gray')
-    plt.show()
-    print(y_train[rand_ind], steer)
-
-
-# In[14]:
-
-# Test image Cropping
-crop_from_top = 50
-crop_from_bottom = 20
-for i in range(5):
-    rand_ind =  np.random.randint(0,len(X_train))
-    rand_img = cv2.imread(X_train[rand_ind])
-    rand_img = cv2.cvtColor(rand_img,cv2.COLOR_BGR2RGB)
-    plt.imshow(rand_img,cmap='gray')
-    plt.show()
-    out_img = rand_img[crop_from_top:rand_img.shape[0] - 1 - crop_from_bottom,
-                       0:rand_img.shape[1] - 1]
-    plt.imshow(out_img,cmap = 'gray')
-    plt.show()
-
-
-# In[15]:
-
-plt.imshow(rescaleImage(rand_img))
-
 
 # In[16]:
 
@@ -294,7 +246,7 @@ def nvidia_model():
 # In[17]:
 
 # Using the Nvidia network. Tried to tune my own network but I got no success
-# Future work: I'll try and give alex net a try
+# Future work: I'll try and give alex net and VGG a shot for this
 if augment is False:    
     bc_model = nvidia_model()
 else:
@@ -304,17 +256,23 @@ bc_model.summary()
 
 # In[18]:
 
+# Compile and fit the model
 bc_model.compile(loss='mse',optimizer='adam')
 batch_size = 512
 num_samples =  int(len(X_train)/(batch_size))*batch_size
 
 filepath="model-{epoch:02d}-{val_loss:.2f}.h5"
+
+# Save all the models. 
 checkpoint = keras.callbacks.ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')
+# Create logs for tensorboard
 checkpoint2 = keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=0, write_graph=True, write_images=True)
 callbacks_list = [checkpoint, checkpoint2]
+
+# Fit the model
 history_object = bc_model.fit_generator(training_generator_function(X_train,y_train, batch_size),
                     samples_per_epoch= num_samples,
-                    nb_epoch=3,
+                    nb_epoch=5,
                     validation_data=validation_generator,
                     nb_val_samples = len(y_valid)/4,
                     verbose=1,
@@ -327,6 +285,7 @@ history_object = bc_model.fit_generator(training_generator_function(X_train,y_tr
 
 # In[19]:
 
+# Plot Training and Validation losses
 plt.plot(history_object.history['loss'])
 plt.plot(history_object.history['val_loss'])
 plt.title('model mean squared error loss')
