@@ -84,6 +84,13 @@ After adding the dropout layers, training loss was higher than validation loss. 
 
 ![Loss](./writeup_helpers/loss.png "Loss")
 
+### Future work
+
+* Try out more models
+* Figure out strategies for track 2
+* Implement a custom layer to resize the images in the model itself
+
+
 
 ```python
 
