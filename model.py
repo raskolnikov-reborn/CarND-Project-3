@@ -218,7 +218,8 @@ X_train, X_valid, y_train, y_valid = train_test_split(np.array(features),
 validation_generator = validation_generator_function(X_valid, y_valid)
 
 
-
+crop_from_top = 50
+crop_from_bottom = 20
 # In[16]:
 
 def nvidia_model():
